@@ -14,29 +14,20 @@
 // ------------------------------------------------------------------------
 
 
-//! \addtogroup glue_affmul
+//! \addtogroup glue_intersect
 //! @{
 
 
 
-class glue_affmul
+class glue_intersect
   {
   public:
   
   template<typename T1, typename T2>
-  inline static void apply(Mat<typename T1::elem_type>& out, const Glue<T1,T2,glue_affmul>& X);
+  inline static void apply(Mat<typename T1::elem_type>& out, const Glue<T1,T2,glue_intersect>& X);
   
   template<typename T1, typename T2>
-  inline static void apply_noalias(Mat<typename T1::elem_type>& out, const T1& A, const T2& B);
-  
-  template<typename T1, typename T2>
-  inline static void apply_noalias_square(Mat<typename T1::elem_type>& out, const T1& A, const T2& B);
-  
-  template<typename T1, typename T2>
-  inline static void apply_noalias_rectangle(Mat<typename T1::elem_type>& out, const T1& A, const T2& B);
-  
-  template<typename T1, typename T2>
-  inline static void apply_noalias_generic(Mat<typename T1::elem_type>& out, const T1& A, const T2& B);
+  inline static void apply(Mat<typename T1::elem_type>& out, uvec& iA, uvec& iB, const Base<typename T1::elem_type,T1>& A_expr, const Base<typename T1::elem_type,T2>& B_expr, const bool calc_indx);
   };
 
 
