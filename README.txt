@@ -192,7 +192,7 @@ In general, programs which use Armadillo are compiled along these lines:
 If you want to use Armadillo without installation,
 or you're getting linking errors, compile along these lines:
   
-  g++ example1.cpp -o example1 -O2 -I /home/blah/armadillo-6.100.0-test/include -DARMA_DONT_USE_WRAPPER -lblas -llapack
+  g++ example1.cpp -o example1 -O2 -I /home/blah/armadillo-6.200.3/include -DARMA_DONT_USE_WRAPPER -lblas -llapack
   
 The above command line assumes that you have unpacked the armadillo archive into /home/blah/
 You will need to adjust this for later versions of Armadillo,
@@ -429,6 +429,7 @@ a 3-clause BSD license.  See the file for license details.
 Main sponsoring organisation:
 - Data61 / NICTA
   http://data61.csiro.au
+  http://nicta.com.au
 
 Main developers:
 - Conrad Sanderson - http://conradsanderson.id.au
@@ -462,7 +463,6 @@ Contributors:
 - Charles Gretton
 - Franz Gritschneder
 - Benjamin Herzog
-- Edmund Highcock
 - Szabolcs Horvat
 - Friedrich Hust
 - Ping-Keng Jao

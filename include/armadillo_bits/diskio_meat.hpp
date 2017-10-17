@@ -1,12 +1,14 @@
-// Copyright (C) 2008-2015 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2015 Conrad Sanderson
-// Copyright (C) 2009-2010 Ian Cullinan
-// Copyright (C) 2012 Ryan Curtin
-// Copyright (C) 2013 Szabolcs Horvat
+// Copyright (C) 2008-2015 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// -------------------------------------------------------------------
+// 
+// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Written by Ian Cullinan
+// Written by Ryan Curtin
+// Written by Szabolcs Horvat
 
 
 //! \addtogroup diskio
@@ -557,12 +559,15 @@ diskio::guess_file_type(std::istream& f)
   f.clear();
   const std::fstream::pos_type pos2 = f.tellg();
   
-  const uword N = ( (pos1 >= 0) && (pos2 >= 0) ) ? uword(pos2 - pos1) : 0;
+  const uword N = ( (pos1 >= 0) && (pos2 >= 0) && (pos2 > pos1) ) ? uword(pos2 - pos1) : 0;
   
   f.clear();
   f.seekg(pos1);
   
+  if(N == 0)  { return file_type_unknown; }
+  
   podarray<unsigned char> data(N);
+  data.zeros();
   
   unsigned char* ptr = data.memptr();
   
@@ -575,35 +580,20 @@ diskio::guess_file_type(std::istream& f)
   f.seekg(pos1);
   
   bool has_binary  = false;
-  bool has_comma   = false;
   bool has_bracket = false;
+  bool has_comma   = false;
   
   if(load_okay == true)
     {
-    uword i = 0;
-    uword j = (N >= 2) ? 1 : 0;
-    
-    for(; j<N; i+=2, j+=2)
+    for(uword i=0; i<N; ++i)
       {
-      const unsigned char val_i = ptr[i];
-      const unsigned char val_j = ptr[j];
+      const unsigned char val = ptr[i];
       
-      // the range checking can be made more elaborate
-      if( ((val_i <= 8) || (val_i >= 123)) || ((val_j <= 8) || (val_j >= 123)) )
-        {
-        has_binary = true;
-        break;
-        }
+      if( (val <=   8) || (val >= 123) )  { has_binary  = true; break; }  // the range checking can be made more elaborate
       
-      if( (val_i == ',') || (val_j == ',') )
-        {
-        has_comma = true;
-        }
+      if( (val == '(') || (val == ')') )  { has_bracket = true;        }
       
-      if( (val_i == '(') || (val_j == '(') || (val_i == ')') || (val_j == ')') )
-        {
-        has_bracket = true;
-        }
+      if( (val == ',')                 )  { has_comma   = true;        }
       }
     }
   else
