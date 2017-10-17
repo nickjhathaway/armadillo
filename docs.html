@@ -144,7 +144,7 @@ hr.greyline
 <!--  -->
 <a class="noprint" style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size=-1>[top]</font></a>
 
-<big><b>API Documentation for Armadillo 6.700</b></big>
+<big><b>API Documentation for Armadillo 7.100</b></big>
 <br>
 <br>
 <br>
@@ -159,7 +159,7 @@ hr.greyline
 <td style="text-align: left; vertical-align: top; width: 50%;">
 <ul>
 <li>
-To aid the conversion of Matlab/Octave programs,
+For converting Matlab/Octave programs,
 see the <a href="#syntax">syntax conversion table</a>
 </li>
 <br>
@@ -172,7 +172,7 @@ If you discover any bugs or regressions, please <a href="http://arma.sourceforge
 </li>
 <br>
 <li>
-Notes on <a href="#api_additions">API additions</a>
+History of <a href="#api_additions">API additions</a>
 </li>
 </ul>
 </td>
@@ -191,11 +191,14 @@ Citations are useful for the continued development and maintenance of the librar
 <br>
 <font size=-1>
 Conrad Sanderson.
-<br>
 <i><a href="armadillo_nicta_2010.pdf">Armadillo: An Open Source C++ Linear Algebra Library for Fast Prototyping and Computationally Intensive Experiments</a></i>.
-<br>
 Technical Report, NICTA, 2010.
 </font>
+</li>
+<br>
+<li>
+If you use Armadillo in products,
+please obtain the <a href="http://arma.sourceforge.net/faq.html#licenses">commercial license</a>
 </li>
 </ul>
 </td>
@@ -3472,6 +3475,9 @@ Q<b>(&nbsp;span(</b>first_row<b>,</b> last_row<b>), span(</b>first_col<b>,</b> l
 Q<b>(&nbsp;</b>first_row<b>,</b> first_col<b>,</b> first_slice<b>, size(</b>n_rows<b>,</b> n_cols<b>, </b>n_slices<b>)&nbsp;)</b><br>
 Q<b>(&nbsp;</b>first_row<b>,</b> first_col<b>,</b> first_slice<b>, size(</b>R<b>)&nbsp;)</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>(R is a cube)</i><br>
 <br>
+Q.<b>head_slices(&nbsp;</b>number_of_slices<b>&nbsp;)</b><br>
+Q.<b>tail_slices(&nbsp;</b>number_of_slices<b>&nbsp;)</b><br>
+<br>
 Q.<b>tube(&nbsp;</b>row<b>,</b> col&nbsp;<b>)</b><br>
 Q.<b>tube(&nbsp;</b>first_row<b>,</b> first_col<b>,</b> last_row<b>,</b> last_col&nbsp;<b>)</b><br>
 Q.<b>tube(&nbsp;span(</b>first_row<b>,</b> last_row<b>), span(</b>first_col<b>,</b> last_col<b>)&nbsp;)</b><br>
@@ -3542,7 +3548,7 @@ Examples:
 <pre>
 cube A = randu&lt;cube&gt;(2,3,4);
 
-mat B = A.slice(1);
+mat  B = A.slice(1); // each slice is a matrix
 
 A.slice(0) = randu&lt;mat&gt;(2,3);
 A.slice(0)(1,2) = 99.0;
@@ -3553,6 +3559,10 @@ A( 0,0,1, size(2,2,2) )              = randu&lt;cube&gt;(2,2,2);
 
 // add 123 to all elements of A greater than 0.5
 A.elem( find(A &gt; 0.5) ) += 123.0;
+
+cube C = A.head_slices(2);  // get first two slices
+
+A.head_slices(2) += 123.0;
 </pre>
 </ul>
 </li>
@@ -7041,13 +7051,13 @@ Examples:
 mat A = randu&lt;mat&gt;(5,5);
 mat B = A + 0.001;
 
-bool same1 = approx_equal(A, B, "abs", 0.002);
+bool same1 = approx_equal(A, B, "absdiff", 0.002);
 
 
 mat C = 1000 * randu&lt;mat&gt;(5,5);
 mat D = C + 1;
 
-bool same2 = approx_equal(C, D, "rel", 0.1);
+bool same2 = approx_equal(C, D, "reldiff", 0.1);
 
 bool same3 = approx_equal(C, D, "both", 2, 0.1);
 </pre>
@@ -7577,8 +7587,9 @@ vec b = diff(a);
 <br>
 <li>See also:
 <ul>
-<li><a href="#cumsum">cumsum()</a></li>
-<li><a href="#stats_fns">statistics functions</a></li>
+<li><a href="#trapz">trapz()</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Numerical_differentiation">numerical differentiation in Wikipedia</a></li>
+<li><a href="http://mathworld.wolfram.com/NumericalDifferentiation.html">numerical differentiation in MathWorld</a></li>
 </ul>
 </li>
 <br>
@@ -9337,8 +9348,10 @@ mat Z = trapz(X,Y);
 <li>See also:
 <ul>
 <li><a href="#sum">sum()</a></li>
+<li><a href="#diff">diff()</a></li>
 <li><a href="#linspace">linspace()</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Numerical_integration">numerical integration in Wikipedia</a>
+<li><a href="http://mathworld.wolfram.com/NumericalIntegration.html">numerical integration in MathWorld</a>
 <li><a href="https://en.wikipedia.org/wiki/Trapezoidal_rule">trapezoidal rule in Wikipedia</a>
 </ul>
 </li>
@@ -9476,11 +9489,13 @@ See also:
 <b>miscellaneous element-wise functions:</b>
 <ul>
 <table border="0" cellpadding="0" cellspacing="0">
-<tr><td><b>exp  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>exp2  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>exp10 </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc_exp</b></td></tr>
-<tr><td><b>log  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>log2  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>log10 </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc_log</b></td></tr>
-<tr><td><b>pow  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>square</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>sqrt  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
-<tr><td><b>floor</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>ceil  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>round </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc    </b></td></tr>
-<tr><td><b>sign </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
+<tr><td><b>exp   </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>exp2  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>exp10 </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc_exp</b></td></tr>
+<tr><td><b>log   </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>log2  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>log10 </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc_log</b></td></tr>
+<tr><td><b>pow   </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>square</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>sqrt  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
+<tr><td><b>floor </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>ceil  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>round </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>trunc    </b></td></tr>
+<tr><td><b>erf   </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>erfc  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
+<tr><td><b>lgamma</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
+<tr><td><b>sign  </b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>&nbsp;   </b></td></tr>
 </table>
 </ul>
 <ul>
@@ -9674,6 +9689,39 @@ fn(A) is one of:
     </td>
   </tr>
   <tr style="background-color: #F5F5F5;">
+    <td style="vertical-align: top; text-align: right;">
+      <code>erf(A)</code>
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      error function
+    </td>
+  </tr>
+  <tr style="background-color: #F5F5F5;">
+    <td style="vertical-align: top; text-align: right;">
+      <code>erfc(A)</code>
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      complementary error function
+    </td>
+  </tr>
+  <tr style="background-color: #F5F5F5;">
+    <td style="vertical-align: top; text-align: right;">
+      <code>lgamma(A)</code>
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      natural log of the gamma function
+    </td>
+  </tr>
+  <tr>
     <td style="vertical-align: top; text-align: right;">
       <code>sign(A)</code>
     </td>
@@ -10610,10 +10658,10 @@ See also:
 <div class="pagebreak"></div><div class="noprint"><hr class="greyline"><br></div>
 <a name="solve"></a>
 <b>X = solve( A, B )</b>
-<br><b>X = solve( A, B, options )</b> &nbsp;&nbsp;&nbsp; (version 6.300+)
+<br><b>X = solve( A, B, settings )</b>
 <br>
 <br><b>solve( X, A, B )</b>
-<br><b>solve( X, A, B, options )</b> &nbsp;&nbsp;&nbsp; (version 6.300+)
+<br><b>solve( X, A, B, settings )</b>
 <ul>
 <li>Solve a <b>dense</b> system of linear equations, <i>A*X = B</i>, where <i>X</i> is unknown;
 similar functionality to the \ operator in Matlab/Octave, ie. <i>X&nbsp;=&nbsp;A&nbsp;\&nbsp;B</i>
@@ -10630,31 +10678,28 @@ similar functionality to the \ operator in Matlab/Octave, ie. <i>X&nbsp;=&nbsp;A
 The number of rows in <i>A</i> and <i>B</i> must be the same
 </li>
 <br>
-<li>The <i>options</i> argument is optional; it is one or a combination of the following:
-<ul>
+<li>The <i>settings</i> argument is optional; it is one of the following, or a combination thereof:
+<br>
 <br>
 <table>
 <tbody>
-<tr><td><code>solve_opts::fast</code></td><td>&nbsp;&nbsp;&nbsp;</td><td>do not apply iterative refinement and/or equilibration</td></tr>
+<tr><td><code>solve_opts::fast</code></td><td>&nbsp;&nbsp;&nbsp;</td><td>fast mode: do not apply iterative refinement and/or equilibration</td></tr>
 <tr><td><code>solve_opts::equilibrate</code></td><td>&nbsp;&nbsp;&nbsp;</td><td>equilibrate the system before solving &nbsp; (matrix <i>A</i> must be square)</td></tr>
 <tr><td><code>solve_opts::no_approx</code></td><td>&nbsp;&nbsp;&nbsp;</td><td>do not find approximate solutions for rank deficient systems</td></tr>
 </tbody>
 </table>
 <br>
-<li>
-Options can be combined using the <code>+</code> operator; for example: <code>solve_opts::fast&nbsp;+&nbsp;solve_opts::no_approx</code>
+the above settings can be combined using the <code>+</code> operator; for example: <code>solve_opts::fast&nbsp;+&nbsp;solve_opts::no_approx</code>
 </li>
 <br>
 <li>
-<b>Caveat:</b> <code>solve_opts::fast</code> is recommended only for well-conditioned systems 
-</li>
-</ul>
+<b>Caveat:</b> using <i><code>solve_opts::fast</code></i> will speed up finding the solution, but for poorly conditioned systems the solution may have lower quality 
 </li>
 <br>
 <li>
 If <i>A</i> is known to be a triangular matrix,
 the solution can be computed faster by explicitly indicating that <i>A</i> is triangular through <a href="#trimat">trimatu()</a> or <a href="#trimat">trimatl()</a>;
-<br>indicating a triangular matrix also implies that <code>solve_opts::fast</code> is enabled
+<br>indicating a triangular matrix also implies that <i><code>solve_opts::fast</code></i> is enabled
 </li>
 <br>
 <li>
@@ -10680,7 +10725,7 @@ bool status = solve(x2, A, b);
 
 mat X1 = solve(A, B);
 
-mat X2 = solve(A, B, solve_opts::fast);
+mat X2 = solve(A, B, solve_opts::fast);  // enable fast mode
 
 mat X3 = solve(trimatu(A), B);  // indicate that A is triangular
 </pre>
@@ -13827,7 +13872,7 @@ log_a, log_b and log_c must have the same type
 <li>The minimum width of both <i>uword</i> and <i>sword</i> is either 32 or 64 bits:
 <ul>
 <li>when using the old C++98 / C++03 standards, the default width is 32 bits</li>
-<li>when using the new C++11 / C++14 standards, the default width is 64 bits on 64-bit platforms (as of Armadillo 5.000)</li>
+<li>when using the new C++11 / C++14 standards, the default width is 64 bits on 64-bit platforms</li>
 </ul>
 </li>
 <br>
@@ -14765,7 +14810,7 @@ Specific functionality can be enabled or disabled by uncommenting or commenting 
       &nbsp;
     </td>
     <td style="vertical-align: top;">
-Enable the use of LAPACK, or a high-speed replacement for LAPACK (eg. Intel MKL, AMD ACML or the Accelerate framework).
+Enable use of LAPACK, or a high-speed replacement for LAPACK (eg. Intel MKL, AMD ACML or the Accelerate framework).
 Armadillo requires LAPACK for functions such as <a href="#svd">svd()</a>, <a href="#inv">inv()</a>, <a href="#eig_sym">eig_sym()</a>, <a href="#solve">solve()</a>, etc.
     </td>
   </tr>
@@ -14810,10 +14855,9 @@ Disable use of LAPACK. Overrides <i>ARMA_USE_LAPACK</i>
       &nbsp;
     </td>
     <td style="vertical-align: top;">
-Enable the use of BLAS, or a high-speed replacement for BLAS (eg. OpenBLAS, Intel MKL, AMD ACML or the Accelerate framework).
+Enable use of BLAS, or a high-speed replacement for BLAS (eg. OpenBLAS, Intel MKL, AMD ACML or the Accelerate framework).
 BLAS is used for <a href="#operators">matrix multiplication</a>.
 Without BLAS, Armadillo will use a built-in matrix multiplication routine, which might be slower for large matrices.
-<!--However, if you're using  64 bit operating system with 32 bit BLAS, it's better to disable the use of BLAS.-->
     </td>
   </tr>
   <tr>
@@ -14851,14 +14895,60 @@ Disable use of BLAS. Overrides <i>ARMA_USE_BLAS</i>
   </tr>
   <tr>
     <td style="vertical-align: top;">
+<code>ARMA_USE_NEWARP</code>
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+Enable use of the built-in reimplementation of ARPACK (Armadillo 7.x).
+This is used for the eigen decomposition of real (non-complex) sparse matrices, ie. <a href="#eigs_gen">eigs_gen()</a>, <a href="#eigs_sym">eigs_sym()</a> and <a href="#svds">svds().</a>
+Requires ARMA_USE_LAPACK to be enabled.
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align: top;">
+<code>ARMA_DONT_USE_NEWARP</code>
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+Disable use of the built-in reimplementation of ARPACK. Overrides <i>ARMA_USE_NEWARP</i>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+    <td style="vertical-align: top;">
+      &nbsp;
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align: top;">
 <code>ARMA_USE_ARPACK</code>
     </td>
     <td style="vertical-align: top;">
       &nbsp;
     </td>
     <td style="vertical-align: top;">
-Enable the use of ARPACK, or a high-speed replacement for ARPACK.
-Armadillo requires ARPACK for the eigen decomposition of sparse matrices, ie. <a href="#eigs_gen">eigs_gen()</a>, <a href="#eigs_sym">eigs_sym()</a> and <a href="#svds">svds()</a>
+Enable use of ARPACK, or a high-speed replacement for ARPACK.
+Armadillo requires ARPACK for the eigen decomposition of complex sparse matrices, ie. <a href="#eigs_gen">eigs_gen()</a>, <a href="#eigs_sym">eigs_sym()</a> and <a href="#svds">svds()</a>
     </td>
   </tr>
   <tr>
@@ -14902,8 +14992,9 @@ Disable use of ARPACK. Overrides <i>ARMA_USE_ARPACK</i>
       &nbsp;
     </td>
     <td style="vertical-align: top;">
-Enable the use of SuperLU, which is used by <a href="#spsolve">spsolve()</a> for finding the solutions of sparse systems.
-Only SuperLU versions 4.x are supported. You will need to link with the superlu library (eg. -lsuperlu)
+Enable use of SuperLU, which is used by <a href="#spsolve">spsolve()</a> for finding the solutions of sparse systems;
+you will need to link with the superlu library, for example <code><i>-lsuperlu</i></code>
+<br><b>Caveat:</b> Armadillo&nbsp;6.x requires SuperLU&nbsp;4.3, while Armadillo&nbsp;7.x requires SuperLU&nbsp;5.2
     </td>
   </tr>
   <tr>
@@ -15195,7 +15286,7 @@ Use Intel MKL <i>mkl_malloc()</i> and <i>mkl_free()</i> instead of standard <i>m
     </td>
     <td style="vertical-align: top;">
 Use 64 bit integers.
-Automatically enabled when using a C++11 compiler (as of Armadillo 5.000).
+Automatically enabled when using a C++11 compiler on 64-bit platforms.
 Useful if you require matrices/vectors capable of holding more than 4 billion elements.
 Your machine and compiler must have support for 64 bit integers (eg. via "long" or "long&nbsp;long").
 This can also be enabled by adding <i>#define&nbsp;ARMA_64BIT_WORD</i> before each instance of <i>#include&nbsp;&lt;armadillo&gt;</i>
@@ -15483,14 +15574,25 @@ List of additions and changes for each version:
 <br>
 <ul>
 
+<a name="version_7100"></a>
+<li>Version 7.100:
+<ul>
+<li>added <a href="#misc_fns">erf()</a>, <a href="#misc_fns">erfc()</a>, <a href="#misc_fns">lgamma()</a></li>
+<li>added <a href="#subcube">.head_slices()</a> and <a href="#subcube">.tail_slices()</a> to subcube views</li>
+<li><a href="#spsolve">spsolve()</a> now requires SuperLU 5.2</li>
+<li><a href="#eigs_sym">eigs_sym()</a>, <a href="#eigs_gen">eigs_gen()</a> and <a href="#svds">svds()</a> now use a built-in reimplementation of ARPACK for real (non-complex) matrices; contributed by Yixuan Qiu
+</li>
+</ul>
+</li>
+<br>
 <a name="version_6700"></a>
 <li>Version 6.700:
 <ul>
-<li>added <a href="#logmat">logmat()</a> for calcuating the matrix logarithm</li>
+<li>added <a href="#trapz">trapz()</a> for numerical integration</li>
+<li>added <a href="#logmat">logmat()</a> for calculating the matrix logarithm</li>
 <li>added <a href="#regspace">regspace()</a> for generating vectors with regularly spaced elements</li>
 <li>added <a href="#logspace">logspace()</a> for generating vectors with logarithmically spaced elements</li>
 <li>added <a href="#approx_equal">approx_equal()</a> for determining approximate equality</li>
-<li>added <a href="#trapz">trapz()</a> for numerical integration</li>
 <li>expanded <a href="#save_load_mat">.save()</a> and <a href="#save_load_mat">.load()</a> with <i>hdf5_binary_trans</i> file type, to save/load data with columns transposed to rows 
 </ul>
 </li>
