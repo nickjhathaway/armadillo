@@ -236,11 +236,23 @@ class subview_col : public subview<eT>
   inline       subview_col<eT> subvec(const uword in_row1, const uword in_row2);
   inline const subview_col<eT> subvec(const uword in_row1, const uword in_row2) const;
   
+  inline       subview_col<eT> subvec(const uword start_row, const SizeMat& s);
+  inline const subview_col<eT> subvec(const uword start_row, const SizeMat& s) const;
+  
   inline       subview_col<eT> head(const uword N);
   inline const subview_col<eT> head(const uword N) const;
   
   inline       subview_col<eT> tail(const uword N);
   inline const subview_col<eT> tail(const uword N) const;
+  
+  inline arma_warn_unused eT min() const;
+  inline arma_warn_unused eT max() const;
+  
+  inline eT min(uword& index_of_min_val) const;
+  inline eT max(uword& index_of_max_val) const;
+  
+  inline arma_warn_unused uword index_min() const;
+  inline arma_warn_unused uword index_max() const;
   
   
   protected:
@@ -305,11 +317,17 @@ class subview_row : public subview<eT>
   inline       subview_row<eT> subvec(const uword in_col1, const uword in_col2);
   inline const subview_row<eT> subvec(const uword in_col1, const uword in_col2) const;
   
+  inline       subview_row<eT> subvec(const uword start_col, const SizeMat& s);
+  inline const subview_row<eT> subvec(const uword start_col, const SizeMat& s) const;
+  
   inline       subview_row<eT> head(const uword N);
   inline const subview_row<eT> head(const uword N) const;
   
   inline       subview_row<eT> tail(const uword N);
   inline const subview_row<eT> tail(const uword N) const;
+  
+  inline arma_warn_unused uword index_min() const;
+  inline arma_warn_unused uword index_max() const;
   
   
   protected:
