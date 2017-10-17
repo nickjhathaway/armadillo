@@ -616,51 +616,6 @@ diskio::guess_file_type(std::istream& f)
 
 
 
-inline
-char
-diskio::conv_to_hex_char(const u8 x)
-  {
-  char out;
-
-  switch(x)
-    {
-    case  0: out = '0'; break;
-    case  1: out = '1'; break;
-    case  2: out = '2'; break;
-    case  3: out = '3'; break;
-    case  4: out = '4'; break;
-    case  5: out = '5'; break;
-    case  6: out = '6'; break;
-    case  7: out = '7'; break;
-    case  8: out = '8'; break;
-    case  9: out = '9'; break;
-    case 10: out = 'a'; break;
-    case 11: out = 'b'; break;
-    case 12: out = 'c'; break;
-    case 13: out = 'd'; break;
-    case 14: out = 'e'; break;
-    case 15: out = 'f'; break;
-    default: out = '-'; break;
-    }
-
-  return out;  
-  }
-
-
-
-inline
-void
-diskio::conv_to_hex(char* out, const u8 x)
-  {
-  const u8 a = x / 16;
-  const u8 b = x - 16*a;
-
-  out[0] = conv_to_hex_char(a);
-  out[1] = conv_to_hex_char(b);
-  }
-
-
-
 //! Append a quasi-random string to the given filename.
 //! The rand() function is deliberately not used,
 //! as rand() has an internal state that changes
@@ -669,60 +624,20 @@ diskio::conv_to_hex(char* out, const u8 x)
 //! results should be reproducable and not affected 
 //! by saving data.
 inline
+arma_cold
 std::string
 diskio::gen_tmp_name(const std::string& x)
   {
-  const std::string* ptr_x     = &x;
-  const u8*          ptr_ptr_x = reinterpret_cast<const u8*>(&ptr_x);
+  union { uword val; void* ptr; } u;
   
-  const char* extra      = ".tmp_";
-  const uword extra_size = 5;
+  u.val = uword(0);
+  u.ptr = const_cast<std::string*>(&x);
   
-  const uword tmp_size   = 2*sizeof(u8*) + 2*2;
-        char  tmp[tmp_size];
+  std::stringstream ss;
   
-  uword char_count = 0;
+  ss << x << ".tmp_" << std::hex << std::noshowbase << (u.val) << (std::clock());
   
-  for(uword i=0; i<sizeof(u8*); ++i)
-    {
-    conv_to_hex(&tmp[char_count], ptr_ptr_x[i]);
-    char_count += 2;
-    }
-  
-  const uword x_size = static_cast<uword>(x.size());
-  u8 sum = 0;
-  
-  for(uword i=0; i<x_size; ++i)
-    {
-    sum = (sum + u8(x[i])) & 0xff;
-    }
-  
-  conv_to_hex(&tmp[char_count], sum);
-  char_count += 2;
-  
-  conv_to_hex(&tmp[char_count], u8(x_size));
-  
-  
-  std::string out;
-  out.resize(x_size + extra_size + tmp_size);
-  
-  
-  for(uword i=0; i<x_size; ++i)
-    {
-    out[i] = x[i];
-    }
-  
-  for(uword i=0; i<extra_size; ++i)
-    {
-    out[x_size + i] = extra[i];
-    }
-  
-  for(uword i=0; i<tmp_size; ++i)
-    {
-    out[x_size + extra_size + i] = tmp[i];
-    }
-  
-  return out;
+  return ss.str();
   }
 
 
@@ -733,6 +648,7 @@ diskio::gen_tmp_name(const std::string& x)
 //! (i)  overwriting files that are write protected,
 //! (ii) overwriting directories.
 inline
+arma_cold
 bool
 diskio::safe_rename(const std::string& old_name, const std::string& new_name)
   {
@@ -888,8 +804,8 @@ diskio::save_raw_ascii(const Mat<eT>& x, std::ostream& f)
   if( (is_float<eT>::value) || (is_double<eT>::value) )
     {
     f.setf(ios::scientific);
-    f.precision(12);
-    cell_width = 20;
+    f.precision(14);
+    cell_width = 22;
     }
   
   for(uword row=0; row < x.n_rows; ++row)
@@ -1014,8 +930,8 @@ diskio::save_arma_ascii(const Mat<eT>& x, std::ostream& f)
   if( (is_float<eT>::value) || (is_double<eT>::value) )
     {
     f.setf(ios::scientific);
-    f.precision(12);
-    cell_width = 20;
+    f.precision(14);
+    cell_width = 22;
     }
     
   for(uword row=0; row < x.n_rows; ++row)
@@ -1091,7 +1007,7 @@ diskio::save_csv_ascii(const Mat<eT>& x, std::ostream& f)
   if( (is_float<eT>::value) || (is_double<eT>::value) )
     {
     f.setf(ios::scientific);
-    f.precision(12);
+    f.precision(14);
     }
   
   uword x_n_rows = x.n_rows;
@@ -2377,7 +2293,7 @@ diskio::save_coord_ascii(const SpMat<eT>& x, std::ostream& f)
     if( (is_float<eT>::value) || (is_double<eT>::value) )
       {
       f.setf(ios::scientific);
-      f.precision(12);
+      f.precision(14);
       }
     
     f << (*iter) << '\n';
@@ -2431,7 +2347,7 @@ diskio::save_coord_ascii(const SpMat< std::complex<T> >& x, std::ostream& f)
     if( (is_float<T>::value) || (is_double<T>::value) )
       {
       f.setf(ios::scientific);
-      f.precision(12);
+      f.precision(14);
       }
     
     const eT val = (*iter);
@@ -3229,8 +3145,8 @@ diskio::save_raw_ascii(const Cube<eT>& x, std::ostream& f)
   if( (is_float<eT>::value) || (is_double<eT>::value) )
     {
     f.setf(ios::scientific);
-    f.precision(12);
-    cell_width = 20;
+    f.precision(14);
+    cell_width = 22;
     }
   
   for(uword slice=0; slice < x.n_slices; ++slice)
@@ -3358,8 +3274,8 @@ diskio::save_arma_ascii(const Cube<eT>& x, std::ostream& f)
   if( (is_float<eT>::value) || (is_double<eT>::value) )
     {
     f.setf(ios::scientific);
-    f.precision(12);
-    cell_width = 20;
+    f.precision(14);
+    cell_width = 22;
     }
     
   for(uword slice=0; slice < x.n_slices; ++slice)

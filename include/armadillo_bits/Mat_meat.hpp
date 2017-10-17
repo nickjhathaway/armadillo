@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -180,7 +180,7 @@ inline
 void
 Mat<eT>::init_cold()
   {
-  arma_extra_debug_sigprint( arma_boost::format("n_rows = %d, n_cols = %d") % n_rows % n_cols );
+  arma_extra_debug_sigprint( arma_str::format("n_rows = %d, n_cols = %d") % n_rows % n_cols );
   
   // ensure that n_elem can hold the result of (n_rows * n_cols)
   
@@ -202,14 +202,19 @@ Mat<eT>::init_cold()
   
   if(n_elem <= arma_config::mat_prealloc)
     {
-    arma_extra_debug_print("Mat::init(): using local memory");
-    
-    access::rw(mem) = mem_local;
+    if(n_elem == 0)
+      {
+      access::rw(mem) = NULL;
+      }
+    else
+      {
+      arma_extra_debug_print("Mat::init(): using local memory");
+      access::rw(mem) = mem_local;
+      }
     }
   else
     {
     arma_extra_debug_print("Mat::init(): acquiring memory");
-    
     access::rw(mem) = memory::acquire<eT>(n_elem);
     }
   }
@@ -221,7 +226,7 @@ inline
 void
 Mat<eT>::init_warm(uword in_n_rows, uword in_n_cols)
   {
-  arma_extra_debug_sigprint( arma_boost::format("in_n_rows = %d, in_n_cols = %d") % in_n_rows % in_n_cols );
+  arma_extra_debug_sigprint( arma_str::format("in_n_rows = %d, in_n_cols = %d") % in_n_rows % in_n_cols );
   
   if( (n_rows == in_n_rows) && (n_cols == in_n_cols) )  { return; }
   
@@ -292,8 +297,15 @@ Mat<eT>::init_warm(uword in_n_rows, uword in_n_cols)
           memory::release( access::rw(mem) );
           }
         
-        arma_extra_debug_print("Mat::init(): using local memory");
-        access::rw(mem) = mem_local;
+        if(new_n_elem == 0)
+          {
+          access::rw(mem) = NULL;
+          }
+        else
+          {
+          arma_extra_debug_print("Mat::init(): using local memory");
+          access::rw(mem) = mem_local;
+          }
         }
       else
         {
@@ -625,7 +637,7 @@ Mat<eT>::operator=(const std::vector<eT>& x)
     , mem_state(0       )
     , mem      (        )
     {
-    arma_extra_debug_sigprint(arma_boost::format("this = %x   X = %x") % this % &X);
+    arma_extra_debug_sigprint(arma_str::format("this = %x   X = %x") % this % &X);
     
     if( ((X.mem_state == 0) && (X.n_elem > arma_config::mat_prealloc)) || (X.mem_state == 1) || (X.mem_state == 2) )
       {
@@ -661,7 +673,7 @@ Mat<eT>::operator=(const std::vector<eT>& x)
   const Mat<eT>&
   Mat<eT>::operator=(Mat<eT>&& X)
     {
-    arma_extra_debug_sigprint(arma_boost::format("this = %x   X = %x") % this % &X);
+    arma_extra_debug_sigprint(arma_str::format("this = %x   X = %x") % this % &X);
     
     (*this).steal_mem(X);
     
@@ -767,7 +779,7 @@ Mat<eT>::Mat(const Mat<eT>& in_mat)
   , mem_state(0)
   , mem()
   {
-  arma_extra_debug_sigprint(arma_boost::format("this = %x   in_mat = %x") % this % &in_mat);
+  arma_extra_debug_sigprint(arma_str::format("this = %x   in_mat = %x") % this % &in_mat);
   
   init_cold();
   
@@ -782,7 +794,7 @@ inline
 const Mat<eT>&
 Mat<eT>::operator=(const Mat<eT>& in_mat)
   {
-  arma_extra_debug_sigprint(arma_boost::format("this = %x   in_mat = %x") % this % &in_mat);
+  arma_extra_debug_sigprint(arma_str::format("this = %x   in_mat = %x") % this % &in_mat);
   
   if(this != &in_mat)
     {
@@ -833,12 +845,12 @@ Mat<eT>::operator=(const Mat<eT>& in_mat)
       {
       if(x_n_cols_found == false)
         {
-        x_n_cols       = (*it).size();
+        x_n_cols       = uword((*it).size());
         x_n_cols_found = true;
         }
       else
         {
-        arma_check( ((*it).size() != x_n_cols), "Mat::init(): inconsistent number of columns in initialiser list" );
+        arma_check( (uword((*it).size()) != x_n_cols), "Mat::init(): inconsistent number of columns in initialiser list" );
         }
       }
     
@@ -949,7 +961,7 @@ Mat<eT>::swap(Mat<eT>& B)
   {
   Mat<eT>& A = (*this);
   
-  arma_extra_debug_sigprint(arma_boost::format("A = %x   B = %x") % &A % &B);
+  arma_extra_debug_sigprint(arma_str::format("A = %x   B = %x") % &A % &B);
 
   bool layout_ok = false;
   
@@ -3809,6 +3821,146 @@ Mat<eT>::each_row(const Base<uword, T1>& indices) const
 
 
 
+#if defined(ARMA_USE_CXX11)
+  
+  //! apply a lambda function to each column, where each column is interpreted as a column vector
+  template<typename eT>
+  inline
+  const Mat<eT>&
+  Mat<eT>::each_col(const std::function< void(Col<eT>&) >& F)
+    {
+    arma_extra_debug_sigprint();
+    
+    for(uword ii=0; ii < n_cols; ++ii)
+      {
+      Col<eT> tmp(colptr(ii), n_rows, false, true);
+      F(tmp);
+      }
+    
+    return *this;
+    }
+  
+  
+  
+  template<typename eT>
+  inline
+  const Mat<eT>&
+  Mat<eT>::each_col(const std::function< void(const Col<eT>&) >& F) const
+    {
+    arma_extra_debug_sigprint();
+    
+    for(uword ii=0; ii < n_cols; ++ii)
+      {
+      const Col<eT> tmp(colptr(ii), n_rows, false, true);
+      F(tmp);
+      }
+    
+    return *this;
+    }
+  
+  
+  
+  //! apply a lambda function to each row, where each row is interpreted as a row vector
+  template<typename eT>
+  inline
+  const Mat<eT>&
+  Mat<eT>::each_row(const std::function< void(Row<eT>&) >& F)
+    {
+    arma_extra_debug_sigprint();
+    
+    podarray<eT> array1(n_cols);
+    podarray<eT> array2(n_cols);
+    
+    Row<eT> tmp1( array1.memptr(), n_cols, false, true );
+    Row<eT> tmp2( array2.memptr(), n_cols, false, true );
+    
+    eT* tmp1_mem = tmp1.memptr();
+    eT* tmp2_mem = tmp2.memptr();
+    
+    uword ii, jj;
+    
+    for(ii=0, jj=1; jj < n_rows; ii+=2, jj+=2)
+      {
+      for(uword col_id = 0; col_id < n_cols; ++col_id)
+        {
+        const eT* col_mem = colptr(col_id);
+        
+        tmp1_mem[col_id] = col_mem[ii];
+        tmp2_mem[col_id] = col_mem[jj];
+        }
+      
+      F(tmp1);
+      F(tmp2);
+      
+      for(uword col_id = 0; col_id < n_cols; ++col_id)
+        {
+        eT* col_mem = colptr(col_id);
+        
+        col_mem[ii] = tmp1_mem[col_id];
+        col_mem[jj] = tmp2_mem[col_id];
+        }
+      }
+    
+    if(ii < n_rows)
+      {
+      tmp1 = (*this).row(ii);
+      
+      F(tmp1);
+      
+      (*this).row(ii) = tmp1;
+      }
+    
+    return *this;
+    }
+  
+  
+  
+  template<typename eT>
+  inline
+  const Mat<eT>&
+  Mat<eT>::each_row(const std::function< void(const Row<eT>&) >& F) const
+    {
+    arma_extra_debug_sigprint();
+    
+    podarray<eT> array1(n_cols);
+    podarray<eT> array2(n_cols);
+    
+    Row<eT> tmp1( array1.memptr(), n_cols, false, true );
+    Row<eT> tmp2( array2.memptr(), n_cols, false, true );
+    
+    eT* tmp1_mem = tmp1.memptr();
+    eT* tmp2_mem = tmp2.memptr();
+    
+    uword ii, jj;
+    
+    for(ii=0, jj=1; jj < n_rows; ii+=2, jj+=2)
+      {
+      for(uword col_id = 0; col_id < n_cols; ++col_id)
+        {
+        const eT* col_mem = colptr(col_id);
+        
+        tmp1_mem[col_id] = col_mem[ii];
+        tmp2_mem[col_id] = col_mem[jj];
+        }
+      
+      F(tmp1);
+      F(tmp2);
+      }
+    
+    if(ii < n_rows)
+      {
+      tmp1 = (*this).row(ii);
+      
+      F(tmp1);
+      }
+    
+    return *this;
+    }
+  
+#endif
+
+
+
 //! creation of diagview (diagonal)
 template<typename eT>
 arma_inline
@@ -6090,6 +6242,67 @@ Mat<eT>::copy_size(const Base<eT2, expr>& X)
 
 
 
+//! apply a functor to each element
+template<typename eT>
+template<typename functor>
+inline
+const Mat<eT>&
+Mat<eT>::for_each(functor F)
+  {
+  arma_extra_debug_sigprint();
+  
+  eT* data = memptr();
+  
+  const uword N = n_elem;
+  
+  uword ii, jj;
+  
+  for(ii=0, jj=1; jj < N; ii+=2, jj+=2)
+    {
+    F(data[ii]);
+    F(data[jj]);
+    }
+  
+  if(ii < N)
+    {
+    F(data[ii]);
+    }
+  
+  return *this;
+  }
+
+
+
+template<typename eT>
+template<typename functor>
+inline
+const Mat<eT>&
+Mat<eT>::for_each(functor F) const
+  {
+  arma_extra_debug_sigprint();
+  
+  const eT* data = memptr();
+  
+  const uword N = n_elem;
+  
+  uword ii, jj;
+  
+  for(ii=0, jj=1; jj < N; ii+=2, jj+=2)
+    {
+    F(data[ii]);
+    F(data[jj]);
+    }
+  
+  if(ii < N)
+    {
+    F(data[ii]);
+    }
+  
+  return *this;
+  }
+
+
+
 //! transform each element in the matrix using a functor
 template<typename eT>
 template<typename functor>
@@ -6680,6 +6893,16 @@ Mat<eT>::save(const std::string name, const file_type type, const bool print_sta
       save_okay = diskio::save_hdf5_binary(*this, name);
       break;
     
+    case hdf5_binary_trans:
+      {
+      Mat<eT> tmp;
+      
+      op_strans::apply_mat_noalias(tmp, *this);
+      
+      save_okay = diskio::save_hdf5_binary(tmp, name);
+      }
+      break;
+    
     default:
       if(print_status)  { arma_debug_warn("Mat::save(): unsupported file type"); }
       save_okay = false;
@@ -6783,6 +7006,16 @@ Mat<eT>::load(const std::string name, const file_type type, const bool print_sta
     
     case hdf5_binary:
       load_okay = diskio::load_hdf5_binary(*this, name, err_msg);
+      break;
+
+    case hdf5_binary_trans:
+      {
+      Mat<eT> tmp;
+      
+      load_okay = diskio::load_hdf5_binary(tmp, name, err_msg);
+      
+      if(load_okay)  { op_strans::apply_mat_noalias(*this, tmp); }
+      }
       break;
 
     default:

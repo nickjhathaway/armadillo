@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -96,8 +96,8 @@ class Cube : public BaseCube< eT, Cube<eT> >
   inline const Cube& operator%=(const subview_cube<eT>& X);
   inline const Cube& operator/=(const subview_cube<eT>& X);
   
-  arma_inline       Mat<eT>& slice(const uword in_slice);
-  arma_inline const Mat<eT>& slice(const uword in_slice) const;
+  inline       Mat<eT>& slice(const uword in_slice);
+  inline const Mat<eT>& slice(const uword in_slice) const;
   
   arma_inline       subview_cube<eT> slices(const uword in_slice1, const uword in_slice2);
   arma_inline const subview_cube<eT> slices(const uword in_slice1, const uword in_slice2) const;
@@ -141,8 +141,13 @@ class Cube : public BaseCube< eT, Cube<eT> >
   
   template<typename T1> inline       subview_cube_each2<eT, T1> each_slice(const Base<uword, T1>& indices);
   template<typename T1> inline const subview_cube_each2<eT, T1> each_slice(const Base<uword, T1>& indices) const;
-
-
+  
+  #if defined(ARMA_USE_CXX11)
+  inline const Cube& each_slice(const std::function< void(      Mat<eT>&) >& F);
+  inline const Cube& each_slice(const std::function< void(const Mat<eT>&) >& F) const;
+  #endif
+  
+  
   inline void shed_slice(const uword slice_num);
   
   inline void shed_slices(const uword in_slice1, const uword in_slice2);
@@ -265,13 +270,11 @@ class Cube : public BaseCube< eT, Cube<eT> >
   
   template<typename eT2> inline void copy_size(const Cube<eT2>& m);
   
+  template<typename functor> inline const Cube&  for_each(functor F);
+  template<typename functor> inline const Cube&  for_each(functor F) const;
   
-  template<typename functor>
-  inline const Cube& transform(functor F);
-  
-  template<typename functor>
-  inline const Cube& imbue(functor F);
-  
+  template<typename functor> inline const Cube& transform(functor F);
+  template<typename functor> inline const Cube&     imbue(functor F);
   
   inline const Cube& fill(const eT val);
   

@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@
 template<typename eT>
 inline
 void
-op_inv::apply(Mat<eT>& out, const Mat<eT>& A, const bool slow)
+op_inv::apply(Mat<eT>& out, const Mat<eT>& A)
   {
   arma_extra_debug_sigprint();
   
@@ -24,12 +24,12 @@ op_inv::apply(Mat<eT>& out, const Mat<eT>& A, const bool slow)
   // - auxlib::inv() copies A to out before inversion
   // - for 2x2 and 3x3 matrices the code is alias safe
   
-  bool status = auxlib::inv(out, A, slow);
+  bool status = auxlib::inv(out, A);
   
   if(status == false)
     {
     out.reset();
-    arma_bad("inv(): matrix appears to be singular");
+    arma_bad("inv(): matrix seems singular");
     }
   }
 
@@ -53,15 +53,13 @@ op_inv::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_inv>& X)
     }
   else
     {
-    const uword mode = X.aux_uword_a;
-    
-    status = (mode == 0) ? auxlib::inv(out, X.m) : auxlib::inv(out, X.m, true);
+    status = auxlib::inv(out, X.m);
     }
     
   if(status == false)
     {
     out.reset();
-    arma_bad("inv(): matrix appears to be singular");
+    arma_bad("inv(): matrix seems singular");
     }
   }
 
@@ -131,7 +129,7 @@ op_inv_tr::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_inv_tr>& X)
   if(status == false)
     {
     out.reset();
-    arma_bad("inv(): matrix appears to be singular");
+    arma_bad("inv(): matrix seems singular");
     }
   }
 
@@ -145,12 +143,12 @@ op_inv_sympd::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_inv_sympd>&
   {
   arma_extra_debug_sigprint();
   
-  const bool status = auxlib::inv_sympd(out, X.m, X.aux_uword_a);
+  const bool status = auxlib::inv_sympd(out, X.m);
   
   if(status == false)
     {
     out.reset();
-    arma_bad("inv_sympd(): matrix appears to be singular");
+    arma_bad("inv_sympd(): matrix seems singular");
     }
   }
 
