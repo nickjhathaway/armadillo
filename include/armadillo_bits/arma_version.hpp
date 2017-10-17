@@ -14,9 +14,9 @@
 
 
 #define ARMA_VERSION_MAJOR 7
-#define ARMA_VERSION_MINOR 100
-#define ARMA_VERSION_PATCH 3
-#define ARMA_VERSION_NAME  "Carbon Addict"
+#define ARMA_VERSION_MINOR 300
+#define ARMA_VERSION_PATCH 1
+#define ARMA_VERSION_NAME  "Feral Winter"
 
 
 
