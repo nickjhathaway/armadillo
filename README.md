@@ -1,4 +1,4 @@
 # armadillo
 A repo to track the armadillo c++ matrix library 
 
-version 7.500.2
+version 7.600.1
