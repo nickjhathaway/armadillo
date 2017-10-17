@@ -1,20 +1,24 @@
 
-# Copyright (C) 2008-2016 National ICT Australia (NICTA)
+# Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+# Copyright 2008-2016 National ICT Australia (NICTA)
 # 
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-# -------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
 # 
-# Written by Conrad Sanderson - http://conradsanderson.id.au
-# Written by Ryan Curtin
-# Written by Clement Creusot
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------
 
 
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
-project(armadillo CXX)
+project(armadillo CXX C)
 include(CheckIncludeFileCXX)
 include(CheckLibraryExists)
 
@@ -240,7 +244,7 @@ endif()
 ## cmake -D DETECT_HDF5=true .
 
 if(DETECT_HDF5)
-  find_package(HDF5 QUIET)
+  find_package(HDF5 QUIET COMPONENTS C)
 
   if(NOT HDF5_FOUND)
     # On Debian systems, the HDF5 package has been split into multiple packages
@@ -353,6 +357,7 @@ message(STATUS "CMAKE_REQUIRED_INCLUDES   = ${CMAKE_REQUIRED_INCLUDES}"  )
 
 add_library( armadillo ${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 target_link_libraries( armadillo ${ARMA_LIBS} )
+target_include_directories(armadillo INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 set_target_properties(armadillo PROPERTIES VERSION ${ARMA_VERSION_MAJOR}.${ARMA_VERSION_MINOR_ALT}.${ARMA_VERSION_PATCH} SOVERSION ${ARMA_VERSION_MAJOR})
 
 
