@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -163,7 +163,7 @@ Cube<eT>::Cube(const SizeCube& s, const fill::fill_class<fill_type>&)
     , mat_ptrs(0)
     {
     arma_extra_debug_sigprint_this(this);
-    arma_extra_debug_sigprint(arma_boost::format("this = %x   in_cube = %x") % this % &in_cube);
+    arma_extra_debug_sigprint(arma_str::format("this = %x   in_cube = %x") % this % &in_cube);
     
     (*this).steal_mem(in_cube);
     }
@@ -175,7 +175,7 @@ Cube<eT>::Cube(const SizeCube& s, const fill::fill_class<fill_type>&)
   const Cube<eT>&
   Cube<eT>::operator=(Cube<eT>&& in_cube)
     {
-    arma_extra_debug_sigprint(arma_boost::format("this = %x   in_cube = %x") % this % &in_cube);
+    arma_extra_debug_sigprint(arma_str::format("this = %x   in_cube = %x") % this % &in_cube);
     
     (*this).steal_mem(in_cube);
     
@@ -191,7 +191,7 @@ inline
 void
 Cube<eT>::init_cold()
   {
-  arma_extra_debug_sigprint( arma_boost::format("n_rows = %d, n_cols = %d, n_slices = %d") % n_rows % n_cols % n_slices );
+  arma_extra_debug_sigprint( arma_str::format("n_rows = %d, n_cols = %d, n_slices = %d") % n_rows % n_cols % n_slices );
   
   #if (defined(ARMA_USE_CXX11) || defined(ARMA_64BIT_WORD))
     const char* error_message = "Cube::init(): requested size is too large";
@@ -209,31 +209,26 @@ Cube<eT>::init_cold()
     error_message
     );
   
+  
   if(n_elem <= Cube_prealloc::mem_n_elem)
     {
-    arma_extra_debug_print("Cube::init(): using local memory");
-    
-    access::rw(mem) = mem_local;
+    if(n_elem == 0)
+      {
+      access::rw(mem) = NULL;
+      }
+    else
+      {
+      arma_extra_debug_print("Cube::init(): using local memory");
+      access::rw(mem) = mem_local;
+      }
     }
   else
     {
     arma_extra_debug_print("Cube::init(): acquiring memory");
-    
     access::rw(mem) = memory::acquire<eT>(n_elem);
     }
   
-  
-  if(n_elem == 0)
-    {
-    access::rw(n_rows)       = 0;
-    access::rw(n_cols)       = 0;
-    access::rw(n_elem_slice) = 0;
-    access::rw(n_slices)     = 0;
-    }
-  else
-    {
-    create_mat();
-    }
+  create_mat();
   }
 
 
@@ -243,7 +238,7 @@ inline
 void
 Cube<eT>::init_warm(const uword in_n_rows, const uword in_n_cols, const uword in_n_slices)
   {
-  arma_extra_debug_sigprint( arma_boost::format("in_n_rows = %d, in_n_cols = %d, in_n_slices = %d") % in_n_rows % in_n_cols % in_n_slices );
+  arma_extra_debug_sigprint( arma_str::format("in_n_rows = %d, in_n_cols = %d, in_n_slices = %d") % in_n_rows % in_n_cols % in_n_slices );
   
   if( (n_rows == in_n_rows) && (n_cols == in_n_cols) && (n_slices == in_n_slices) )  { return; }
   
@@ -283,15 +278,12 @@ Cube<eT>::init_warm(const uword in_n_rows, const uword in_n_cols, const uword in
     
     delete_mat();
     
-    if(new_n_elem > 0)
-      {
-      access::rw(n_rows)       = in_n_rows;
-      access::rw(n_cols)       = in_n_cols;
-      access::rw(n_elem_slice) = in_n_rows*in_n_cols;
-      access::rw(n_slices)     = in_n_slices;
-      
-      create_mat();
-      }
+    access::rw(n_rows)       = in_n_rows;
+    access::rw(n_cols)       = in_n_cols;
+    access::rw(n_elem_slice) = in_n_rows*in_n_cols;
+    access::rw(n_slices)     = in_n_slices;
+    
+    create_mat();
     }
   else  // condition: old_n_elem != new_n_elem
     {
@@ -309,8 +301,15 @@ Cube<eT>::init_warm(const uword in_n_rows, const uword in_n_cols, const uword in
           memory::release( access::rw(mem) );
           }
         
-        arma_extra_debug_print("Cube::init(): using local memory");
-        access::rw(mem) = mem_local;
+        if(new_n_elem == 0)
+          {
+          access::rw(mem) = NULL;
+          }
+        else
+          {
+          arma_extra_debug_print("Cube::init(): using local memory");
+          access::rw(mem) = mem_local;
+          }
         }
       else
         {
@@ -339,26 +338,13 @@ Cube<eT>::init_warm(const uword in_n_rows, const uword in_n_cols, const uword in
       access::rw(mem_state) = 0;
       }
     
-    if(new_n_elem > 0)
-      {
-      access::rw(n_rows)       = in_n_rows;
-      access::rw(n_cols)       = in_n_cols;
-      access::rw(n_elem_slice) = in_n_rows*in_n_cols;
-      access::rw(n_slices)     = in_n_slices;
-      access::rw(n_elem)       = new_n_elem;
-      
-      create_mat();
-      }
-    }
-  
-  
-  if(new_n_elem == 0)
-    {
-    access::rw(n_rows)       = 0;
-    access::rw(n_cols)       = 0;
-    access::rw(n_elem_slice) = 0;
-    access::rw(n_slices)     = 0;
-    access::rw(n_elem)       = 0;
+    access::rw(n_rows)       = in_n_rows;
+    access::rw(n_cols)       = in_n_cols;
+    access::rw(n_elem_slice) = in_n_rows*in_n_cols;
+    access::rw(n_slices)     = in_n_slices;
+    access::rw(n_elem)       = new_n_elem;
+    
+    create_mat();
     }
   }
 
@@ -435,7 +421,7 @@ Cube<eT>::delete_mat()
   {
   arma_extra_debug_sigprint();
   
-  if(mat_ptrs != NULL)
+  if((n_slices > 0) && (mat_ptrs != NULL))
     {
     for(uword uslice = 0; uslice < n_slices; ++uslice)
       {
@@ -458,23 +444,30 @@ Cube<eT>::create_mat()
   {
   arma_extra_debug_sigprint();
   
-  if(mem_state <= 2)
+  if(n_slices == 0)
     {
-    if(n_slices <= Cube_prealloc::mat_ptrs_size)
-      {
-      access::rw(mat_ptrs) = const_cast< const Mat<eT>** >(mat_ptrs_local);
-      }
-    else
-      {
-      access::rw(mat_ptrs) = new(std::nothrow) const Mat<eT>*[n_slices];
-      
-      arma_check_bad_alloc( (mat_ptrs == 0), "Cube::create_mat(): out of memory" );
-      }
+    access::rw(mat_ptrs) = NULL;
     }
-  
-  for(uword uslice = 0; uslice < n_slices; ++uslice)
+  else
     {
-    mat_ptrs[uslice] = NULL;
+    if(mem_state <= 2)
+      {
+      if(n_slices <= Cube_prealloc::mat_ptrs_size)
+        {
+        access::rw(mat_ptrs) = const_cast< const Mat<eT>** >(mat_ptrs_local);
+        }
+      else
+        {
+        access::rw(mat_ptrs) = new(std::nothrow) const Mat<eT>*[n_slices];
+        
+        arma_check_bad_alloc( (mat_ptrs == 0), "Cube::create_mat(): out of memory" );
+        }
+      }
+    
+    for(uword uslice = 0; uslice < n_slices; ++uslice)
+      {
+      mat_ptrs[uslice] = NULL;
+      }
     }
   }
 
@@ -570,7 +563,7 @@ Cube<eT>::Cube(const Cube<eT>& x)
   , mat_ptrs(0)
   {
   arma_extra_debug_sigprint_this(this);
-  arma_extra_debug_sigprint(arma_boost::format("this = %x   in_cube = %x") % this % &x);
+  arma_extra_debug_sigprint(arma_str::format("this = %x   in_cube = %x") % this % &x);
   
   init_cold();
   
@@ -585,7 +578,7 @@ inline
 const Cube<eT>&
 Cube<eT>::operator=(const Cube<eT>& x)
   {
-  arma_extra_debug_sigprint(arma_boost::format("this = %x   in_cube = %x") % this % &x);
+  arma_extra_debug_sigprint(arma_str::format("this = %x   in_cube = %x") % this % &x);
   
   if(this != &x)
     {
@@ -860,7 +853,7 @@ Cube<eT>::operator/=(const subview_cube<eT>& X)
 
 //! provide the reference to the matrix representing a single slice
 template<typename eT>
-arma_inline
+inline
 Mat<eT>&
 Cube<eT>::slice(const uword in_slice)
   {
@@ -870,7 +863,9 @@ Cube<eT>::slice(const uword in_slice)
   
   if(mat_ptrs[in_slice] == NULL)
     {
-    mat_ptrs[in_slice] = new Mat<eT>('j', slice_memptr(in_slice), n_rows, n_cols);
+    const eT* ptr = (n_elem_slice > 0) ? slice_memptr(in_slice) : NULL;
+    
+    mat_ptrs[in_slice] = new Mat<eT>('j', ptr, n_rows, n_cols);
     }
   
   return const_cast< Mat<eT>& >( *(mat_ptrs[in_slice]) );
@@ -880,7 +875,7 @@ Cube<eT>::slice(const uword in_slice)
 
 //! provide the reference to the matrix representing a single slice
 template<typename eT>
-arma_inline
+inline
 const Mat<eT>&
 Cube<eT>::slice(const uword in_slice) const
   {
@@ -890,7 +885,9 @@ Cube<eT>::slice(const uword in_slice) const
   
   if(mat_ptrs[in_slice] == NULL)
     {
-    mat_ptrs[in_slice] = new Mat<eT>('j', slice_memptr(in_slice), n_rows, n_cols);
+    const eT* ptr = (n_elem_slice > 0) ? slice_memptr(in_slice) : NULL;
+    
+    mat_ptrs[in_slice] = new Mat<eT>('j', ptr, n_rows, n_cols);
     }
   
   return *(mat_ptrs[in_slice]);
@@ -1477,6 +1474,49 @@ Cube<eT>::each_slice(const Base<uword, T1>& indices) const
   
   return subview_cube_each2<eT, T1>(*this, indices);
   }
+
+
+
+#if defined(ARMA_USE_CXX11)
+  
+  //! apply a lambda function to each slice, where each slice is interpreted as a matrix
+  template<typename eT>
+  inline
+  const Cube<eT>&
+  Cube<eT>::each_slice(const std::function< void(Mat<eT>&) >& F)
+    {
+    arma_extra_debug_sigprint();
+    
+    for(uword slice_id=0; slice_id < n_slices; ++slice_id)
+      {
+      Mat<eT> tmp('j', slice_memptr(slice_id), n_rows, n_cols);
+      
+      F(tmp);
+      }
+    
+    return *this;
+    }
+  
+  
+  
+  template<typename eT>
+  inline
+  const Cube<eT>&
+  Cube<eT>::each_slice(const std::function< void(const Mat<eT>&) >& F) const
+    {
+    arma_extra_debug_sigprint();
+    
+    for(uword slice_id=0; slice_id < n_slices; ++slice_id)
+      {
+      const Mat<eT> tmp('j', slice_memptr(slice_id), n_rows, n_cols);
+      
+      F(tmp);
+      }
+    
+    return *this;
+    }
+  
+#endif
 
 
 
@@ -3013,6 +3053,67 @@ Cube<eT>::copy_size(const Cube<eT2>& m)
 
 
 
+//! apply a functor to each element 
+template<typename eT>
+template<typename functor>
+inline
+const Cube<eT>&
+Cube<eT>::for_each(functor F)
+  {
+  arma_extra_debug_sigprint();
+  
+  eT* data = memptr();
+  
+  const uword N = n_elem;
+  
+  uword ii, jj;
+  
+  for(ii=0, jj=1; jj < N; ii+=2, jj+=2)
+    {
+    F(data[ii]);
+    F(data[jj]);
+    }
+  
+  if(ii < N)
+    {
+    F(data[ii]);
+    }
+  
+  return *this;
+  }
+
+
+
+template<typename eT>
+template<typename functor>
+inline
+const Cube<eT>&
+Cube<eT>::for_each(functor F) const
+  {
+  arma_extra_debug_sigprint();
+  
+  const eT* data = memptr();
+  
+  const uword N = n_elem;
+  
+  uword ii, jj;
+  
+  for(ii=0, jj=1; jj < N; ii+=2, jj+=2)
+    {
+    F(data[ii]);
+    F(data[jj]);
+    }
+  
+  if(ii < N)
+    {
+    F(data[ii]);
+    }
+  
+  return *this;
+  }
+
+
+
 //! transform each element in the cube using a functor
 template<typename eT>
 template<typename functor>
@@ -3471,6 +3572,16 @@ Cube<eT>::save(const std::string name, const file_type type, const bool print_st
       save_okay = diskio::save_hdf5_binary(*this, name);
       break;
     
+    case hdf5_binary_trans:
+      {
+      Cube<eT> tmp;
+      
+      op_strans_cube::apply_noalias(tmp, (*this));
+      
+      save_okay = diskio::save_hdf5_binary(tmp, name);
+      }
+      break;
+    
     default:
       if(print_status)  { arma_debug_warn("Cube::save(): unsupported file type"); }
       save_okay = false;
@@ -3566,6 +3677,16 @@ Cube<eT>::load(const std::string name, const file_type type, const bool print_st
 
     case hdf5_binary:
       load_okay = diskio::load_hdf5_binary(*this, name, err_msg);
+      break;
+    
+    case hdf5_binary_trans:
+      {
+      Cube<eT> tmp;
+      
+      load_okay = diskio::load_hdf5_binary(tmp, name, err_msg);
+      
+      if(load_okay)  { op_strans_cube::apply_noalias((*this), tmp); }
+      }
       break;
     
     default:
@@ -3880,7 +4001,7 @@ Cube<eT>::swap(Cube<eT>& B)
   {
   Cube<eT>& A = (*this);
   
-  arma_extra_debug_sigprint(arma_boost::format("A = %x   B = %x") % &A % &B);
+  arma_extra_debug_sigprint(arma_str::format("A = %x   B = %x") % &A % &B);
   
   if( (A.mem_state == 0) && (B.mem_state == 0) && (A.n_elem > Cube_prealloc::mem_n_elem) && (B.n_elem > Cube_prealloc::mem_n_elem) )
     {

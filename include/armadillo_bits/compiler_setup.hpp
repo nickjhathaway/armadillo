@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -67,9 +67,10 @@
 
 #if defined(__CYGWIN__)
   #if defined(ARMA_USE_CXX11)
-    #undef ARMA_USE_CXX11
-    #undef ARMA_USE_EXTERN_CXX11_RNG
-    #pragma message ("WARNING: disabled use of C++11 features in Armadillo, due to incomplete support for C++11 by Cygwin")
+    #pragma message ("WARNING: Cygwin may have incomplete support for C++11 features;")
+    #pragma message ("WARNING: if something breaks, you get to keep all the pieces.")
+    #pragma message ("WARNING: to forcefully prevent Armadillo from using C++11 features,")
+    #pragma message ("WARNING: #define ARMA_DONT_USE_CXX11 before #include <armadillo>")
   #endif
 #endif
 
@@ -86,7 +87,7 @@
   
   #if defined(ARMA_64BIT_WORD) && defined(SIZE_MAX)
     #if (SIZE_MAX < 0xFFFFFFFFFFFFFFFFull)
-      #pragma message ("WARNING: disabled use of 64 bit integers, as std::size_t is smaller than 64 bits")
+      // #pragma message ("WARNING: disabled use of 64 bit integers, as std::size_t is smaller than 64 bits")
       #undef ARMA_64BIT_WORD
     #endif
   #endif
@@ -205,7 +206,7 @@
   
   #if defined(ARMA_USE_CXX11)
     #if (ARMA_GCC_VERSION < 40800)
-      #pragma message ("WARNING: compiler is in C++11 mode, but it has incomplete support for C++11 features;")
+      #pragma message ("WARNING: compiler is in C++11 mode, but it has INCOMPLETE support for C++11 features;")
       #pragma message ("WARNING: if something breaks, you get to keep all the pieces.")
       #pragma message ("WARNING: to forcefully prevent Armadillo from using C++11 features,")
       #pragma message ("WARNING: #define ARMA_DONT_USE_CXX11 before #include <armadillo>")
@@ -362,14 +363,14 @@
   #endif
   
   #if (_MSC_VER < 1700)
-    #pragma message ("WARNING: this compiler is outdated and has incomplete support for the C++ standard;")
+    #pragma message ("WARNING: this compiler is OUTDATED and has INCOMPLETE support for the C++ standard;")
     #pragma message ("WARNING: if something breaks, you get to keep all the pieces")
     #define ARMA_BAD_COMPILER
   #endif
   
   #if defined(ARMA_USE_CXX11)
     #if (_MSC_VER < 1900)
-      #pragma message ("WARNING: compiler is in C++11 mode, but it has incomplete support for C++11 features;")
+      #pragma message ("WARNING: compiler is in C++11 mode, but it has INCOMPLETE support for C++11 features;")
       #pragma message ("WARNING: if something breaks, you get to keep all the pieces.")
       #pragma message ("WARNING: to forcefully prevent Armadillo from using C++11 features,")
       #pragma message ("WARNING: #define ARMA_DONT_USE_CXX11 before #include <armadillo>")
@@ -382,6 +383,7 @@
   #pragma warning(push)
   
   #pragma warning(disable: 4127)  // conditional expression is constant
+  #pragma warning(disable: 4244)  // possible loss of data when converting types
   #pragma warning(disable: 4510)  // default constructor could not be generated
   #pragma warning(disable: 4511)  // copy constructor can't be generated
   #pragma warning(disable: 4512)  // assignment operator can't be generated
@@ -392,6 +394,7 @@
   #pragma warning(disable: 4624)  // destructor can't be generated
   #pragma warning(disable: 4625)  // copy constructor can't be generated
   #pragma warning(disable: 4626)  // assignment operator can't be generated
+  #pragma warning(disable: 4702)  // unreachable code
   #pragma warning(disable: 4710)  // function not inlined
   #pragma warning(disable: 4711)  // call was inlined
   #pragma warning(disable: 4714)  // __forceinline can't be inlined

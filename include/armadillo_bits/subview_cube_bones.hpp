@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,7 +68,9 @@ class subview_cube : public BaseCube<eT, subview_cube<eT> >
   template<typename T1> inline void operator-= (const Base<eT,T1>& x);
   template<typename T1> inline void operator%= (const Base<eT,T1>& x);
   template<typename T1> inline void operator/= (const Base<eT,T1>& x);
-
+  
+  template<typename gen_type> inline void operator=(const GenCube<eT,gen_type>& x);
+  
   inline static void       extract(Cube<eT>& out, const subview_cube& in);
   inline static void  plus_inplace(Cube<eT>& out, const subview_cube& in);
   inline static void minus_inplace(Cube<eT>& out, const subview_cube& in);
@@ -81,8 +83,16 @@ class subview_cube : public BaseCube<eT, subview_cube<eT> >
   inline static void schur_inplace(Mat<eT>& out, const subview_cube& in);
   inline static void   div_inplace(Mat<eT>& out, const subview_cube& in);
   
+  template<typename functor> inline void  for_each(functor F);
+  template<typename functor> inline void  for_each(functor F) const;
+  
   template<typename functor> inline void transform(functor F);
   template<typename functor> inline void     imbue(functor F);
+  
+  #if defined(ARMA_USE_CXX11)
+  inline void each_slice(const std::function< void(      Mat<eT>&) >& F);
+  inline void each_slice(const std::function< void(const Mat<eT>&) >& F) const;
+  #endif
   
   inline void fill(const eT val);
   inline void zeros();

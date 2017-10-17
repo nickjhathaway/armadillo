@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright (C) 2008-2016 National ICT Australia (NICTA)
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,10 +33,10 @@ class auxlib
   // inv
   
   template<typename eT, typename T1>
-  inline static bool inv(Mat<eT>& out, const Base<eT,T1>& X, const bool slow = false);
+  inline static bool inv(Mat<eT>& out, const Base<eT,T1>& X);
   
   template<typename eT>
-  inline static bool inv(Mat<eT>& out, const Mat<eT>& A, const bool slow = false);
+  inline static bool inv(Mat<eT>& out, const Mat<eT>& A);
   
   template<typename eT>
   inline static bool inv_noalias_tinymat(Mat<eT>& out, const Mat<eT>& X, const uword N);
@@ -63,14 +63,14 @@ class auxlib
   // inv_sympd
   
   template<typename eT, typename T1>
-  inline static bool inv_sympd(Mat<eT>& out, const Base<eT,T1>& X, const uword layout);
+  inline static bool inv_sympd(Mat<eT>& out, const Base<eT,T1>& X);
   
   
   //
   // det
   
   template<typename eT, typename T1>
-  inline static eT det(const Base<eT,T1>& X, const bool slow = false);
+  inline static eT det(const Base<eT,T1>& X);
   
   template<typename eT>
   inline static eT det_tinymat(const Mat<eT>& X, const uword N);
@@ -103,26 +103,20 @@ class auxlib
   // eig_gen
   
   template<typename T1>
-  inline static bool eig_gen(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const uword mode, const Base<typename T1::pod_type,T1>& expr);
+  inline static bool eig_gen(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const bool vecs_on, const Base<typename T1::pod_type,T1>& expr);
   
   template<typename T1>
-  inline static bool eig_gen(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const uword mode, const Base< std::complex<typename T1::pod_type>, T1 >& expr);
-  
-  template<typename T1>
-  inline static bool eig_gen_dual(Mat< std::complex<typename T1::pod_type> >& vals, Mat<typename T1::pod_type>& vecs_l, Mat<typename T1::pod_type>& vecs_r, const Base<typename T1::pod_type,T1>& expr);
-  
-  template<typename T1>
-  inline static bool eig_gen_dual(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs_l, Mat< std::complex<typename T1::pod_type> >& vecs_r, const Base< std::complex<typename T1::pod_type>, T1 >& expr);
+  inline static bool eig_gen(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const bool vecs_on, const Base< std::complex<typename T1::pod_type>, T1 >& expr);
   
   
   //
   // eig_pair
   
   template<typename T1, typename T2>
-  inline static bool eig_pair(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const uword mode, const Base<typename T1::pod_type,T1>& A_expr, const Base<typename T1::pod_type,T2>& B_expr);
+  inline static bool eig_pair(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const bool vecs_on, const Base<typename T1::pod_type,T1>& A_expr, const Base<typename T1::pod_type,T2>& B_expr);
   
   template<typename T1, typename T2>
-  inline static bool eig_pair(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const uword mode, const Base< std::complex<typename T1::pod_type>, T1 >& A_expr, const Base< std::complex<typename T1::pod_type>, T2 >& B_expr);
+  inline static bool eig_pair(Mat< std::complex<typename T1::pod_type> >& vals, Mat< std::complex<typename T1::pod_type> >& vecs, const bool vecs_on, const Base< std::complex<typename T1::pod_type>, T1 >& A_expr, const Base< std::complex<typename T1::pod_type>, T2 >& B_expr);
   
   
   //
@@ -221,21 +215,26 @@ class auxlib
   //
   // solve
   
-  template<typename eT, typename T1>
-  inline static bool solve   (Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X, const bool slow = false);
+  template<typename T1>
+  inline static bool solve_square_fast(Mat<typename T1::elem_type>& out, Mat<typename T1::elem_type>& A, const Base<typename T1::elem_type,T1>& B_expr);
   
-  template<typename eT, typename T1>
-  inline static bool solve_od(Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X);
+  template<typename T1>
+  inline static bool solve_square_refine(Mat<typename T1::pod_type>& out, typename T1::pod_type& out_rcond, Mat<typename T1::pod_type>& A, const Base<typename T1::pod_type,T1>& B_expr, const bool equilibrate);
   
-  template<typename eT, typename T1>
-  inline static bool solve_ud(Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X);
+  template<typename T1>
+  inline static bool solve_square_refine(Mat< std::complex<typename T1::pod_type> >& out, typename T1::pod_type& out_rcond, Mat< std::complex<typename T1::pod_type> >& A, const Base<std::complex<typename T1::pod_type>,T1>& B_expr, const bool equilibrate);
   
+  template<typename T1>
+  inline static bool solve_approx_fast(Mat<typename T1::elem_type>& out, Mat<typename T1::elem_type>& A, const Base<typename T1::elem_type,T1>& B_expr);
   
-  //
-  // solve_tr
+  template<typename T1>
+  inline static bool solve_approx_svd(Mat<typename T1::pod_type>& out, Mat<typename T1::pod_type>& A, const Base<typename T1::pod_type,T1>& B_expr);
   
-  template<typename eT>
-  inline static bool solve_tr(Mat<eT>& out, const Mat<eT>& A, const Mat<eT>& B, const uword layout);
+  template<typename T1>
+  inline static bool solve_approx_svd(Mat< std::complex<typename T1::pod_type> >& out, Mat< std::complex<typename T1::pod_type> >& A, const Base<std::complex<typename T1::pod_type>,T1>& B_expr);
+  
+  template<typename T1>
+  inline static bool solve_tri(Mat<typename T1::elem_type>& out, const Mat<typename T1::elem_type>& A, const Base<typename T1::elem_type,T1>& B_expr, const uword layout);
   
   
   //
@@ -247,6 +246,8 @@ class auxlib
   template<typename  T, typename T1>
   inline static bool schur(Mat<std::complex<T> >& U, Mat<std::complex<T> >& S, const Base<std::complex<T>,T1>& X, const bool calc_U = true);
   
+  template<typename  T>
+  inline static bool schur(Mat<std::complex<T> >& U, Mat<std::complex<T> >& S, const bool calc_U = true);
   
   //
   // syl (solution of the Sylvester equation AX + XB = C)
@@ -263,6 +264,16 @@ class auxlib
   
   template<typename T, typename T1, typename T2>
   inline static bool qz(Mat< std::complex<T> >& A, Mat< std::complex<T> >& B, Mat< std::complex<T> >& vsl, Mat< std::complex<T> >& vsr, const Base< std::complex<T>, T1 >& X_expr, const Base< std::complex<T>, T2 >& Y_expr);
+  
+  
+  // 
+  // rcond
+  
+  template<typename T1>
+  inline static typename T1::pod_type rcond(const Base<typename T1::pod_type,T1>& A_expr);
+  
+  template<typename T1>
+  inline static typename T1::pod_type rcond(const Base<std::complex<typename T1::pod_type>,T1>& A_expr);
   };
 
 
