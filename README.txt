@@ -283,8 +283,8 @@ For better performance, we recommend the following high-quality C++ compilers:
   GCC from CygWin:    http://www.cygwin.com/
   Intel C++ compiler: http://software.intel.com/en-us/intel-compilers/
 
-For the GCC compiler, use version 4.2 or later.
-For the Intel compiler, use version 11.0 or later.
+For the GCC compiler, use version 4.6 or later.
+For the Intel compiler, use version 13.0 or later.
 
 For best results we also recommend using an operating system
 that's more reliable and more suitable for heavy duty work,
