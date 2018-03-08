@@ -37,10 +37,9 @@ class SpSubview : public SpBase<eT, SpSubview<eT> >
   const uword n_cols;
   const uword n_elem;
   const uword n_nonzero;
-
-  // So that SpValProxy can call add_element() and delete_element().
-  friend class SpValProxy<SpSubview<eT> >;
-
+  
+  friend class SpValProxy< SpSubview<eT> >;   // allow SpValProxy to call insert_element() and delete_element()
+  
   protected:
 
   arma_inline SpSubview(const SpMat<eT>& in_m, const uword in_row1, const uword in_col1, const uword in_n_rows, const uword in_n_cols);
@@ -166,10 +165,9 @@ class SpSubview : public SpBase<eT, SpSubview<eT> >
     arma_aligned       uword      internal_pos;
     arma_aligned       uword      skip_pos; // not used in row_iterator or const_row_iterator
 
-    // So that we satisfy the STL iterator types.
     typedef std::bidirectional_iterator_tag iterator_category;
     typedef eT                              value_type;
-    typedef uword                           difference_type; // not certain on this one
+    typedef std::ptrdiff_t                  difference_type;  // TODO: not certain on this one
     typedef const eT*                       pointer;
     typedef const eT&                       reference;
     };
@@ -305,11 +303,11 @@ class SpSubview : public SpBase<eT, SpSubview<eT> >
   private:
   friend class SpMat<eT>;
   SpSubview();
-
-  // For use by SpValProxy.  We just update n_nonzero and pass the call on to the matrix.
-  inline arma_hot arma_warn_unused eT&  add_element(const uword in_row, const uword in_col, const eT in_val = 0.0);
-  inline arma_hot                  void delete_element(const uword in_row, const uword in_col);
-
+  
+  inline arma_warn_unused eT&  insert_element(const uword in_row, const uword in_col, const eT in_val = eT(0));
+  inline                  void delete_element(const uword in_row, const uword in_col);
+  
+  inline void invalidate_cache() const;
   };
 
 /*
